@@ -42,12 +42,25 @@ Ration Ration::operator+ (const Ration& rat){
     return ratio;
 }
 
-Ration operator- (const Ration& rat){
-
+Ration Ration::operator- (const Ration& rat){
+    int common_denominator = denomin()*rat.denomin() /
+            NOK(denomin(), rat.denomin());
+    int numerator = numer()*common_denominator/denomin() -
+            rat.numer()*common_denominator/rat.denomin();
+    Ration ratio(numerator, common_denominator);
+    return ratio;
 }
 
-Ration operator* (const Ration& rat){
+Ration Ration::operator* (const Ration& rat){
+    int numer = numerator*rat.numer();
+    int denomin = denominator*rat.denomin();
+    Ration ratio(numer, denomin);
+    return ratio;
+}
 
+Ration Ration::operator/ (const Ration& rat){
+    Ration temp(rat.denomin(), rat.numer());
+    return (*this)*temp;
 }
 
 std::ostream& operator<< (std::ostream& os, const Ration& rat){
