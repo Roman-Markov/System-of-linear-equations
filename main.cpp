@@ -4,8 +4,6 @@
 #include <rational.h>
 using namespace std;
 
-int NOD(int dividend, int divider);
-int NOK(int a, int b);
 int main()
 {
     Ration rat1(17, 4);
@@ -15,20 +13,3 @@ int main()
     getchar();
     return 0;
 }
-
-int NOK(int a, int b){
-    return a*b/NOD(a, b);
-}
-
-int NOD(int dividend, int divider){
-    int temp = dividend;
-    dividend = abs(dividend) > abs(divider)? dividend: divider;
-    divider = abs(temp) < abs(divider)? temp: divider;
-    while(temp != 0){
-        temp = dividend%divider;
-        dividend = divider;
-        divider = temp;
-    }
-    return dividend;
-}
-
