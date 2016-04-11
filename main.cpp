@@ -30,24 +30,40 @@ int main()
 }
 
 Ration* resolve_system(Ration** matrix, int columns, int lines){
+    int work_column = 0;
     for(int i = 0; i < lines; i++){
         print(matrix, columns, lines);
         for(int j = i; j < columns; j++){
+          // обработка нулевых значений коэффициентов на углах, ищем хорошую строку
+            if(matrix[i][work_column].numer() == 0){
+                for(int j = i+1; j < lines; j++){
+                    if(matrix[j][work_column].numer() != 0){ // строка найдена, перезапись
+                        Ration* work = (Ration*) malloc(sizeof(Ration)*columns);
+                        for(int k = 0; k < columns; k++){
+                            work[k] = matrix[i][k];
+                            matrix[i][k] = matrix[j][k];
+                            matrix[j][k] = work[k];
+                        }
+                        free(work);
+                    }
+                }
+            }
+            Ration temp = matrix[i][work_column];
             // деление всех коэффициентов на крайний левый на рабочей строке
-            Ration temp = matrix[i][i];
             for(int j = i; j < columns; j++)
                 matrix[i][j] = matrix[i][j]/temp;
             // определение множителя рабочей строки для каждой следующей
             // и вычитание из всех строк рабочей
             if(i != lines-1){
                 for(int k = i+1; k < lines; k++){
-                    Ration factor = matrix[k][i]/temp;
-                    for(int n = i; n < columns; n++){
+                    Ration factor = matrix[k][work_column]/temp;
+                    for(int n = work_column; n < columns; n++){
                         matrix[k][n] = matrix[k][n] - factor*matrix[i][n];
                     }
                 }
             }
         }
+        work_column++;
     }
     print(matrix, columns, lines);
     Ration* result = (Ration*) malloc(sizeof(int)*lines);
