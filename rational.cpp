@@ -34,8 +34,7 @@ void Ration::setDenominator(int b){
 }
 
 Ration Ration::operator+ (const Ration& rat){
-    int common_denominator = denomin()*rat.denomin() /
-            NOK(denomin(), rat.denomin());
+    int common_denominator = NOK(denomin(), rat.denomin());
     int numerator = numer()*common_denominator/denomin() +
             rat.numer()*common_denominator/rat.denomin();
     Ration ratio(numerator, common_denominator);
@@ -43,8 +42,7 @@ Ration Ration::operator+ (const Ration& rat){
 }
 
 Ration Ration::operator- (const Ration& rat){
-    int common_denominator = denomin()*rat.denomin() /
-            NOK(denomin(), rat.denomin());
+    int common_denominator = NOK(denomin(), rat.denomin());
     int numerator = numer()*common_denominator/denomin() -
             rat.numer()*common_denominator/rat.denomin();
     Ration ratio(numerator, common_denominator);
