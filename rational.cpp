@@ -64,8 +64,8 @@ Ration Ration::operator/ (const Ration& rat){
 }
 
 Ration Ration::operator/ (const int& div){
-    Ration temp(1, div);
-    return (*this)*temp;
+    Ration temp(div, 1);
+    return (*this)/temp;
 }
 
 std::ostream& operator<< (std::ostream& os, const Ration& rat){

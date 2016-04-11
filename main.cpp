@@ -45,6 +45,7 @@ Ration* resolve_system(Ration** matrix, int columns, int lines){
                             matrix[j][k] = work[k];
                         }
                         free(work);
+                        break;
                     }
                 }
             }
@@ -56,7 +57,7 @@ Ration* resolve_system(Ration** matrix, int columns, int lines){
             // и вычитание из всех строк рабочей
             if(i != lines-1){
                 for(int k = i+1; k < lines; k++){
-                    Ration factor = matrix[k][work_column]/temp;
+                    Ration factor = matrix[k][work_column];
                     for(int n = work_column; n < columns; n++){
                         matrix[k][n] = matrix[k][n] - factor*matrix[i][n];
                     }
@@ -82,11 +83,11 @@ Ration** fillmatrix(int* vars, int sizeVars, int lines){
             if(j==sizeVars){
                 Ration t =0;
                 for(int j = 0; j < sizeVars; j++)
-                    t = t + matrix[i][j];
+                    t = t + matrix[i][j]*vars[j];
                 matrix[i][sizeVars] = t;
                 break;
             }
-            matrix[i][j] = vars[j]*rand()%9;
+            matrix[i][j] = rand()%9;
         }
     return matrix;
 }
