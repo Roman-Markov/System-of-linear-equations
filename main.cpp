@@ -5,8 +5,8 @@
 #include <vector>
 using namespace std;
 
-int** fillmatrix(int* vars, int sizeVars, int lines);
-void print(int** A, int n, int m);
+Ration** fillmatrix(int* vars, int sizeVars, int lines);
+void print(Ration **A, int n, int m);
 int* fill_vars(int n);
 int main()
 {
@@ -17,7 +17,7 @@ int main()
     printf("Enter number of lines: ");
     int lines = 1;
     scanf("%d", &lines);
-    int** matrix = fillmatrix(vars, vars_size, lines);
+    Ration** matrix = fillmatrix(vars, vars_size, lines);
     print(matrix, vars_size+1, lines);
     free(vars);
     free(matrix[0]);
@@ -25,17 +25,25 @@ int main()
     std::cin.get();
 }
 
-int** fillmatrix(int* vars, int sizeVars, int lines){
-    int** matrix = (int**) malloc(sizeof(int*)*lines);
-    matrix[0] = (int*) malloc(sizeof(int)*lines*(sizeVars+1));
+
+
+
+
+
+
+
+
+Ration** fillmatrix(int* vars, int sizeVars, int lines){
+    Ration** matrix = (Ration**) malloc(sizeof(Ration*)*lines);
+    matrix[0] = (Ration*) malloc(sizeof(Ration)*lines*(sizeVars+1));
     for(int i = 1; i < lines; i++)
         matrix[i] = *matrix + (sizeVars+1)*i;
     for(int i = 0; i < lines; i++)
         for(int j = 0; j < (sizeVars+1);j++){
             if(j==sizeVars){
-                int t =0;
+                Ration t =0;
                 for(int j = 0; j < sizeVars; j++)
-                    t += matrix[i][j];
+                    t = t + matrix[i][j];
                 matrix[i][sizeVars] = t;
                 break;
             }
@@ -44,11 +52,11 @@ int** fillmatrix(int* vars, int sizeVars, int lines){
     return matrix;
 }
 
-void print(int** A, int n, int m){
+void print(Ration** A, int n, int m){
     for(int i = 0; i < m; i++)
     {
         for(int j = 0; j < n; j++)
-            printf("%d ", A[i][j]);
+            cout << A[i][j] << " ";
         printf("%c", '\n');
     }
 }

@@ -63,6 +63,11 @@ Ration Ration::operator/ (const Ration& rat){
     return (*this)*temp;
 }
 
+Ration Ration::operator/ (const int& div){
+    Ration temp(1, div);
+    return (*this)*temp;
+}
+
 std::ostream& operator<< (std::ostream& os, const Ration& rat){
     if (rat.numer()%rat.denomin() == 0) os << rat.numer()/rat.denomin();
     else os << rat.numer() << "/" << rat.denomin();
