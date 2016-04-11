@@ -33,12 +33,13 @@ int main()
     else{
         Ration** res = resolve_system(matrix, vars_size+1, lines);
         for(int i = 0; i < lines; i++){
-            cout << "x1 = " << res[i][vars_size - lines] << " + ";
-            for(int j = 0; j < vars_size - lines-1; j++ ){
-                cout << res[i][j] << "x" << lines+1+j;
+            cout << "X" << i+1 << " = " << res[i][vars_size - lines] << " + ";
+            for(int j = 0; j < vars_size - lines; j++ ){
+                cout << -res[i][j] << " * X" << lines+1+j;
                 if(j != vars_size - lines -1)
-                    cout << "+";
+                    cout << "\t+ ";
             }
+            cout << endl;
         }
         free(res[0]);
         free(res);

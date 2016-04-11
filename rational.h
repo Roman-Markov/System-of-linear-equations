@@ -29,6 +29,7 @@ public:
     Ration operator* (const Ration& rat);
     Ration operator/ (const Ration& rat);
     Ration operator/ (const int& div);
+    Ration operator-();
 
 };
 #endif // RATIONAL_H
