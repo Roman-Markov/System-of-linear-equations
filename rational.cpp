@@ -17,6 +17,13 @@ Ration Ration::operator = (const Ration& rat){
     denominator = rat.denomin();
     return *this;
 }
+
+Ration Ration::operator = (const int integ){
+    numerator = integ;
+    denominator = 1;
+    return *this;
+}
+
 int Ration::numer() const{
     return numerator;
 }
@@ -31,6 +38,15 @@ void Ration::setNumerator(int a){
 
 void Ration::setDenominator(int b){
     denominator = b;
+}
+
+bool Ration::operator != (const Ration& rat){
+    if((numerator != rat.numer()) || (denominator != rat.denomin()))
+        return true;
+}
+
+bool Ration::operator > (const int integ){
+    return( numerator/denominator > integ);
 }
 
 Ration Ration::operator+ (const Ration& rat){

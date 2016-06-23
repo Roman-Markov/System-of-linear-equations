@@ -19,6 +19,9 @@ public:
     int denomin()const;
 
     Ration operator = (const Ration& rat);
+    Ration operator = (const int integ);
+    bool operator != (const Ration& rat);
+    bool operator > (const int integ);
     //bool operator == (const Ration& rat);
     //bool operator == (const double& drat);
     //bool operator < (const Ration& rat);
