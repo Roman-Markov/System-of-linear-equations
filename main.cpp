@@ -1,9 +1,8 @@
-#include <iostream>
+﻿#include <iostream>
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
-//#include <vector>
 #include <ctime>
 #include <iostream>
 using namespace std;
