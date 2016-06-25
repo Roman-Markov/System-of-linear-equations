@@ -110,13 +110,14 @@ bool validate_chol(double** matrix, int lines, int columns){
         for(int j = 0; j <= i; j++)
             if(matrix[i][j] != matrix[j][i])
                 return 0;
-    int* used = new int(lines);
+    int* used = new int[lines];
     // хранит номера столбцов которые уже были в множителе
     memset(used, 0, sizeof(used));
     // подсчёт определителя
     //print(matrix, columns, lines);
     double sum = determ(matrix, used, columns, 0);
-    delete used;
+    cout << sum << endl;
+    delete [] used;
     cout << "DETERMINANT = " << sum << endl;
     if(sum > 0) return true;
     else return false;
@@ -124,12 +125,20 @@ bool validate_chol(double** matrix, int lines, int columns){
 
 // Подсчёт определителя
 double determ(double** matrix, int* used, int columns, int current_line){
-    if(current_line == columns - 2)
-        for(int j = 0; j < columns-1 ; j++)
+    if(current_line == columns - 3){
+        int t[2]; // номера столбцов, которые не заняты
+        int k = 0;
+        for(int j = 0; j < columns-1 ; j++){
             if(used[j] != 1){
-                cout << "supp: - " << matrix[current_line][j] << endl;
-                return matrix[current_line][j];
+                t[k] = j;
+                k++;
             }
+        }
+        double det2 = matrix[current_line][t[0]] * matrix[current_line + 1][t[1]] -
+                matrix[current_line][t[1]] * matrix[current_line + 1][t[0]];
+        cout << "supp: - " << det2 << endl;
+        return det2;
+    }
     double temp = 0;
     for(int j = 0; j < columns-1; j++){
         if(used[j] != 1){
