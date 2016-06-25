@@ -15,7 +15,7 @@ void print(double **A, int n, int m);
 int* fill_vars(int n);
 
 bool validate_chol(double** matrix, int lines, int columns);
-//cholesky_decomposition(double** matrix, int lines, int columns);
+double** cholesky_decomposition(double** matrix, int lines, int columns);
 double determ(double** matrix, int *used, int columns, int current_line);
 
 int main()
@@ -66,8 +66,10 @@ int main()
     }
 
     printf("CHOL - %d\n", validate_chol(matrix, lines, columns));
-    //if(validate_chol(matrix, lines, columns));
-        //cholesky_decomposition(matrix);
+    double** L;
+    if(validate_chol(matrix, lines, columns))
+        L = cholesky_decomposition(matrix, lines, columns);
+    print(L, lines, lines);
     double** result;
     double* res;
     if(lines != columns - 1)
@@ -113,9 +115,7 @@ bool validate_chol(double** matrix, int lines, int columns){
     int* used = new int[lines];
     // хранит номера столбцов которые уже были в множителе
     memset(used, 0, sizeof(used));
-    // подсчёт определителя
-    //print(matrix, columns, lines);
-    double sum = determ(matrix, used, columns, 0);
+    double sum = determ(matrix, used, columns, 0);// подсчёт определителя
     cout << sum << endl;
     delete [] used;
     cout << "DETERMINANT = " << sum << endl;
@@ -125,6 +125,7 @@ bool validate_chol(double** matrix, int lines, int columns){
 
 // Подсчёт определителя
 double determ(double** matrix, int* used, int columns, int current_line){
+    //условие конца рекурсии и её обратного хода
     if(current_line == columns - 3){
         int t[2]; // номера столбцов, которые не заняты
         int k = 0;
@@ -140,6 +141,7 @@ double determ(double** matrix, int* used, int columns, int current_line){
         return det2;
     }
     double temp = 0;
+    // основное тело рекурсии
     for(int j = 0; j < columns-1; j++){
         if(used[j] != 1){
             used[j] = 1;
@@ -154,9 +156,42 @@ double determ(double** matrix, int* used, int columns, int current_line){
     return temp;
 }
 
-/*cholesky_decomposition(double** matrix, int lines, int columns){
-
-}*/
+double **cholesky_decomposition(double** matrix, int lines, int columns){
+// выделение памяти
+    double** L = (double**) malloc(sizeof(double*)*lines);
+    L[0] = (double*) malloc(sizeof(double)*lines*lines);
+    for(int i = 1; i < lines; i++)
+        L[i] = *L + i*lines;
+    memset(L[0],0, sizeof(double)*lines*lines);
+// заполнение L
+    L[0][0] = pow(matrix[0][0], 0.5);// первый угловой
+    for(int i = 1; i < lines; i++){  // элементы первого столбца
+        L[i][0] = matrix[i][0]/L[0][0];
+    }
+//основной цикл
+    for(int i = 1; i < lines-1; i++){
+        // вычисление элементов диагонали
+        double temp = matrix[i][i];
+        for(int k = 0; k < i; k++)
+            temp -= L[i][k]*L[i][k];
+        L[i][i] = pow(temp, 0.5);
+    // вычисление элементов строки следующей за вычисленным
+    // элементом диагонали
+        for(int p = 1; p <= i; p++){
+            temp = matrix[i+1][p];
+            for (int j = 0; j < p; j++){
+                temp-=L[i][j]*L[i+1][j];
+            }
+            L[i+1][p] = temp/L[i][i];
+        }
+        temp = matrix[lines-1][lines-1];
+     // вычисление последнего углового элемента
+        for(int k = 0; k < lines-1; k++)
+            temp -= L[i][k]*L[i][k];
+        L[lines-1][lines-1] = pow(temp, 0.5);
+    }
+    return L;
+}
 
 // Решение квадратной системы
 double* resolve_square_system(double** matrix, int columns, int lines){
