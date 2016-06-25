@@ -64,6 +64,8 @@ int main()
         }
         break;
     }
+
+    printf("CHOL - %d\n", validate_chol(matrix, lines, columns));
     //if(validate_chol(matrix, lines, columns));
         //cholesky_decomposition(matrix);
     double** result;
@@ -100,33 +102,46 @@ int main()
 
 // Проверка матрицы: положительно определённая?
 bool validate_chol(double** matrix, int lines, int columns){
-    if(lines != columns)
+    // сравнение числа строк и столбцов
+    if(lines != columns-1)
         return 0;
+    // сравнение симметричных элементов
     for(int i = 0; i < lines; i++)
         for(int j = 0; j <= i; j++)
             if(matrix[i][j] != matrix[j][i])
                 return 0;
     int* used = new int(lines);
+    // хранит номера столбцов которые уже были в множителе
     memset(used, 0, sizeof(used));
+    // подсчёт определителя
+    //print(matrix, columns, lines);
     double sum = determ(matrix, used, columns, 0);
     delete used;
-    cout << sum << endl;
+    cout << "DETERMINANT = " << sum << endl;
     if(sum > 0) return true;
     else return false;
 }
 
 // Подсчёт определителя
 double determ(double** matrix, int* used, int columns, int current_line){
-    double temp;
-    for(int j = 0; j < columns; j++){
-        if(used[j] == 0){
+    if(current_line == columns - 2)
+        for(int j = 0; j < columns-1 ; j++)
+            if(used[j] != 1){
+                cout << "supp: - " << matrix[current_line][j] << endl;
+                return matrix[current_line][j];
+            }
+    double temp = 0;
+    for(int j = 0; j < columns-1; j++){
+        if(used[j] != 1){
             used[j] = 1;
-            temp = matrix[current_line][j]*
+            int power = current_line + j;
+            temp += matrix[current_line][j]*
                     determ(matrix, used, columns, current_line+1)*
-                    pow(-1, current_line + j);
+                    pow(-1, power);
             used[j] = 0;
         }
-    }
+    };
+    cout << "base: - " << temp << endl;
     return temp;
 }
 
