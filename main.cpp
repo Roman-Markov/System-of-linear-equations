@@ -9,9 +9,12 @@ using namespace std;
 
 double* resolve_square_system(double** matrix, int columns, int lines);
 double** resolve_system(double** matrix, int columns, int lines);
+double* gaus_step_down(double** step_matrix, int lines, double* right_column);
+double* gaus_step_up(double** step_matrix, int lines, double* right_column);
+void transponir(double ** L, double *** LT, int columns, int lines);
 double** fillRandMatrix(int* vars, int sizeVars, int lines);
 double** fillsystem(int& lines, int& columns);
-void print(double **A, int n, int m);
+void print(double **A, int columns, int lines);
 int* fill_vars(int n);
 
 bool validate_chol(double** matrix, int lines, int columns);
@@ -66,10 +69,32 @@ int main()
     }
 
     printf("CHOL - %d\n", validate_chol(matrix, lines, columns));
-    double** L;
-    if(validate_chol(matrix, lines, columns))
+    if(validate_chol(matrix, lines, columns)){
+        double** L;
         L = cholesky_decomposition(matrix, lines, columns);
-    print(L, lines, lines);
+        print(L, lines, lines);
+        double* right_part =(double*) malloc (sizeof(double)*lines);
+        for (int i = 0; i < lines; i ++)
+            right_part[i] = matrix[i][columns-1];
+        double* values_y = gaus_step_down(L, lines, right_part);
+        for (int i = 0; i < lines; i ++)
+            printf("y%d = %lf\n", i+1, values_y[i]);
+        double** LT;
+        transponir(L, &LT, lines, lines);
+        print(LT, lines, lines);
+        double* values_x = gaus_step_up(LT, lines, values_y);
+        for (int i = 0; i < lines; i ++)
+            printf("x%d = %lf\n", i+1, values_x[i]);
+        /*free(L[0]);
+        free(LT[0]);
+        free(L);
+        free(LT);
+        free(values_y);
+        free(values_x);
+        free(matrix[0]);
+        free(matrix);*/
+        return 0;
+    }
     double** result;
     double* res;
     if(lines != columns - 1)
@@ -191,6 +216,43 @@ double **cholesky_decomposition(double** matrix, int lines, int columns){
         L[lines-1][lines-1] = pow(temp, 0.5);
     }
     return L;
+}
+
+// Решение ступенчатой матрицы нижнетреугольного вида
+double* gaus_step_down(double** step_matrix, int lines, double* right_column){
+    double* ar_value =(double*) malloc (sizeof(double)*lines);
+    for(int i = 0; i < lines; i++){
+        double temp = 0;
+        for(int j = 0; j < i; j++)
+            temp += ar_value[j]*step_matrix[i][j];
+        ar_value[i] = (right_column[i] - temp)/step_matrix[i][i];
+    }
+    return ar_value;
+}
+
+// Решение ступенчатой матрицы верхнетреугольного вида
+double* gaus_step_up(double** step_matrix, int lines, double* right_column){
+    double* ar_value =(double*) malloc (sizeof(double)*lines);
+    for(int i = lines-1; i > 0; i--){
+        double temp = 0;
+        for(int j = lines-1; j > i; j--)
+            temp += ar_value[j]*step_matrix[i][j];
+        ar_value[i] = (right_column[i] - temp)/step_matrix[i][i];
+    }
+    return ar_value;
+}
+
+// Транспонирование матрицы
+void transponir(double** L, double *** LT, int columns, int lines){
+// Выделение памяти
+    *LT = (double**) malloc(sizeof(double*)*columns);
+    (*LT)[0] = (double*) malloc(sizeof(double)*lines*columns);
+    for(int i = 0; i < columns; i++)
+        (*LT)[i] = *(*LT) + i*lines;
+// Транспонирование
+    for(int i = 0; i < lines; i++)
+        for(int j = 0; j < columns; j++)
+            (*LT)[j][i] = L[i][j];
 }
 
 // Решение квадратной системы
@@ -360,10 +422,10 @@ double** fillsystem(int& lines, int& columns)
 }
 
 // Вывод матрицы на экран
-void print(double** A, int n, int m){
-    for(int i = 0; i < m; i++)
+void print(double** A, int columns, int lines){
+    for(int i = 0; i < lines; i++)
     {
-        for(int j = 0; j < n; j++)
+        for(int j = 0; j < columns; j++)
             cout << A[i][j] << "\t";
         printf("%c", '\n');
     }
