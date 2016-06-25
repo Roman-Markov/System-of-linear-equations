@@ -49,24 +49,22 @@ int main()
             printf("error fopen()\n");
         }
         fscanf(file_matrix, "%d %d", &lines, &columns);
-        double** matrix = (double**) malloc(sizeof(double*)*lines);
+        matrix = (double**) malloc(sizeof(double*)*lines);
         matrix[0] = (double*) malloc(sizeof(double)*lines*columns);
         for(int i = 1; i < lines; i++)
             matrix[i] = *matrix + columns*i;
-        int temp;
+        double temp;
         for(int i = 0; i < lines; i++)
             for(int j = 0; j < columns; j++){
-                fscanf(file_matrix, "%d", &temp);
+                fscanf(file_matrix, "%lf", &temp);
                 matrix[i][j] = temp;
             };
         fclose(file_matrix);
         print(matrix, columns, lines);
-        columns--;
         }
         break;
     }
-
-    if(validate_chol(matrix, lines, columns));
+    //if(validate_chol(matrix, lines, columns));
         //cholesky_decomposition(matrix);
     double** result;
     double* res;
