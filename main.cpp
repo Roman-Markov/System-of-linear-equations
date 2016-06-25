@@ -100,7 +100,7 @@ int main()
     std::cin.get();
 }
 
-# Проверка матрицы: положительно определённая?
+// Проверка матрицы: положительно определённая?
 bool validate_chol(double** matrix, int lines, int columns){
     if(lines != columns)
         return 0;
@@ -117,7 +117,7 @@ bool validate_chol(double** matrix, int lines, int columns){
     else return false;
 }
 
-# Подсчёт определителя
+// Подсчёт определителя
 double determ(double** matrix, int* used, int columns, int current_line){
     double temp;
     for(int j = 0; j < columns; j++){
@@ -136,7 +136,7 @@ double determ(double** matrix, int* used, int columns, int current_line){
 
 }*/
 
-# Решение квадратной системы
+// Решение квадратной системы
 double* resolve_square_system(double** matrix, int columns, int lines){
     int work_column = 0, f = 0;
     double temp;
@@ -198,7 +198,7 @@ double* resolve_square_system(double** matrix, int columns, int lines){
     return result;
 }
 
-# Решение неквадратной системы
+// Решение неквадратной системы
 double** resolve_system(double** matrix, int columns, int lines){
     int work_column = 0, f = 0;
     double temp;
@@ -255,7 +255,7 @@ double** resolve_system(double** matrix, int columns, int lines){
     return result;
 }
 
-# Заполнение матрицы случайными числами
+// Заполнение матрицы случайными числами
 double** fillRandMatrix(int* vars, int columns, int lines){
     if(lines > columns-1) lines = columns-1;
     double** matrix = (double**) malloc(sizeof(double*)*lines);
@@ -276,7 +276,7 @@ double** fillRandMatrix(int* vars, int columns, int lines){
     return matrix;
 }
 
-# Заполнение коэффициентов систумы пользователем
+// Заполнение коэффициентов системы пользователем
 double** fillsystem(int& lines, int& columns)
 {
     int tempVolume = 0;
@@ -302,7 +302,7 @@ double** fillsystem(int& lines, int& columns)
     return matrix;
 }
 
-# Вывод матрицы на экран
+// Вывод матрицы на экран
 void print(double** A, int n, int m){
     for(int i = 0; i < m; i++)
     {
@@ -313,11 +313,14 @@ void print(double** A, int n, int m){
     std::cout << std::endl;
 }
 
-#Заполнение массива переменых пользователем
+// Заполнение массива переменых пользователем
 int* fill_vars(int n){
     int* vars = (int*) malloc(sizeof(int)*n);
     for(int i = 0; i < n; i++)
+    {
+        printf("Введите значение %d переменной: ", i+1);
         scanf("%d", vars+i);
+    }
     return vars;
 }
 
