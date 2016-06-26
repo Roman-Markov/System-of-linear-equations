@@ -69,6 +69,7 @@ int main()
     }
 
     if(validate_chol(matrix, lines, columns)){
+        printf("Матрица симметричная положительная определённая\n\n");
         double** L;
         L = cholesky_decomposition(matrix, lines, columns);
         print(L, lines, lines);
@@ -78,20 +79,20 @@ int main()
         double* values_y = gaus_step_down(L, lines, right_part);
         for (int i = 0; i < lines; i ++)
             printf("y%d = %.2lf\n", i+1, values_y[i]);
+        printf("\n");
         double** LT;
         transponir(L, &LT, lines, lines);
         print(LT, lines, lines);
         double* values_x = gaus_step_up(LT, lines, values_y);
         for (int i = 0; i < lines; i ++)
             printf("x%d = %.2lf\n", i+1, values_x[i]);
-        /*free(L[0]);
+        printf("\n");
+        free(L[0]);
         free(LT[0]);
         free(L);
         free(LT);
         free(values_y);
         free(values_x);
-        free(matrix[0]);
-        free(matrix);*/
         return 0;
     }
     double** result;
@@ -138,13 +139,22 @@ bool validate_chol(double** matrix, int lines, int columns){
                 return 0;
     int* used = new int[lines];
     // хранит номера столбцов которые уже были в множителе
-    memset(used, 0, sizeof(used));
-    double sum = determ(matrix, used, columns, 0);// подсчёт определителя
-    cout << sum << endl;
+    if(matrix[0][0] < 0)
+        return false;
+    if((matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]) < 0)
+        return false;
+    for(int i = 3; i <= lines; i++){
+        memset(used, 0, sizeof(used));
+        double sum = determ(matrix, used, i, 0);// подсчёт определителя
+        printf( "DETERMINANT %d = %.2lf\n", i, sum);
+        if(sum < 0) {
+            delete [] used;
+            return false;
+        }
+    }
+    printf("\n");
     delete [] used;
-    cout << "DETERMINANT = " << sum << endl;
-    if(sum > 0) return true;
-    else return false;
+    return true;
 }
 
 // Подсчёт определителя
@@ -161,7 +171,6 @@ double determ(double** matrix, int* used, int columns, int current_line){
         }
         double det2 = matrix[current_line][t[0]] * matrix[current_line + 1][t[1]] -
                 matrix[current_line][t[1]] * matrix[current_line + 1][t[0]];
-        cout << "supp: - " << det2 << endl;
         return det2;
     }
     double temp = 0;
@@ -176,7 +185,6 @@ double determ(double** matrix, int* used, int columns, int current_line){
             used[j] = 0;
         }
     };
-    cout << "base: - " << temp << endl;
     return temp;
 }
 
@@ -188,7 +196,7 @@ double **cholesky_decomposition(double** matrix, int lines, int columns){
         L[i] = *L + i*lines;
     memset(L[0],0, sizeof(double)*lines*lines);
 // заполнение L
-    L[0][0] = pow(matrix[0][0], 0.5);// первый угловой
+    L[0][0] = sqrt(matrix[0][0]);// первый угловой
     for(int i = 1; i < lines; i++){  // элементы первого столбца
         L[i][0] = matrix[i][0]/L[0][0];
     }
@@ -198,22 +206,22 @@ double **cholesky_decomposition(double** matrix, int lines, int columns){
         double temp = matrix[i][i];
         for(int k = 0; k < i; k++)
             temp -= L[i][k]*L[i][k];
-        L[i][i] = pow(temp, 0.5);
+        L[i][i] = sqrt(temp);
     // вычисление элементов строки следующей за вычисленным
     // элементом диагонали
         for(int p = 1; p <= i; p++){
             temp = matrix[i+1][p];
             for (int j = 0; j < p; j++){
-                temp-=L[i][j]*L[i+1][j];
+                temp-=L[p][j]*L[i+1][j];
             }
-            L[i+1][p] = temp/L[i][i];
+            L[i+1][p] = temp/L[p][p];
         }
-        temp = matrix[lines-1][lines-1];
-     // вычисление последнего углового элемента
-        for(int k = 0; k < lines-1; k++)
-            temp -= L[lines-1][k]*L[lines-1][k];
-        L[lines-1][lines-1] = pow(temp, 0.5);
     }
+     // вычисление последнего углового элемента
+    double temp = matrix[lines-1][lines-1];
+    for(int k = 0; k < lines-1; k++)
+        temp -= L[lines-1][k]*L[lines-1][k];
+    L[lines-1][lines-1] = sqrt(temp);
     return L;
 }
 
