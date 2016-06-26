@@ -14,6 +14,7 @@ double* gaus_step_up(double** step_matrix, int lines, double* right_column);
 void transponir(double ** L, double *** LT, int columns, int lines);
 double** fillRandMatrix(int* vars, int sizeVars, int lines);
 double** fillsystem(int& lines, int& columns);
+void improve_matrix(double*** matrix, int lines, int columns);
 void print(double **A, int columns, int lines);
 int* fill_vars(int n);
 
@@ -47,7 +48,11 @@ int main()
         }
         break;
     case 'f':{
-        FILE* file_matrix = fopen("/home/roman/matrix", "r");
+        char filename[120];
+        printf("Формат файла: первые 2 числа - количество строк и столбцов, затем коэффициенты\n");
+        printf("Введите полный путь к файлу: ");
+        scanf("%s", filename);
+        FILE* file_matrix = fopen(filename, "r");
         if(NULL == file_matrix){
             printf("error fopen()\n");
         }
@@ -93,6 +98,8 @@ int main()
         free(LT);
         free(values_y);
         free(values_x);
+        free(matrix[0]);
+        free(matrix);
         return 0;
     }
     double** result;
@@ -252,6 +259,7 @@ double* gaus_step_up(double** step_matrix, int lines, double* right_column){
 
 // Решение ступенчатой недоопределёной СЛУ
 double** gaus_step_undeterm(double** matrix, int lines, int columns){
+    improve_matrix(&matrix, lines, columns);
     int num_col = columns - lines;
     // выделение памяти
     double** values = (double**) malloc(sizeof(double*)*lines);
@@ -279,6 +287,27 @@ double** gaus_step_undeterm(double** matrix, int lines, int columns){
         cout << endl;
     }
     return values;
+}
+
+// Приведение прямоугольной матрицы к стандартному виду
+void improve_matrix(double*** matrix, int lines, int columns){
+    for(int i = 0; i < lines; i ++)
+        if ((*matrix)[i][i] == 0){
+            // поиск ненулевого элемента за чертой
+            int good_col;
+            for(int k = lines; k < columns - 1; k++)
+                if((*matrix)[i][k] != 0)
+                    good_col = k;
+            // перезапись столбца
+            for(int p = 0; p <= i; p++){
+                double temp = 0;
+                temp = (*matrix)[p][i];
+                (*matrix)[p][i] = (*matrix)[p][good_col];
+                (*matrix)[p][good_col] = temp;
+            }// остальные и так 0, т.к. ступенчатая матрица
+        }
+    cout << "Good matrix:" << endl;
+    print(*matrix, columns, lines);
 }
 
 // Транспонирование матрицы
@@ -368,11 +397,6 @@ double** resolve_system(double** matrix, int columns, int& lines){
     double temp;
     for(int base_line = 0; base_line < lines; base_line++){
         f = 0;
-        // если система ЛЗ, т.е. самое угловое значение == 0, а строка ещё не последняя
-        if((floor(matrix[base_line][work_column] * 1000 + .5)/1000 == 0) && (work_column == columns -2) ){
-            lines = base_line;
-            return gaus_step_undeterm(matrix, lines, columns);
-        }
         // обработка нулевых значений коэффициентов на углах, ищем хорошую строку
         if(floor( matrix[base_line][work_column] * 1000 + .5)/1000 == 0){ //округление до 3 знака
             int col = work_column;
@@ -400,6 +424,11 @@ double** resolve_system(double** matrix, int columns, int& lines){
             work_column = col;
         }
         else temp = matrix[base_line][work_column];
+        // если система ЛЗ, т.е. самое угловое значение == 0, а строка ещё не последняя
+        if((floor(matrix[base_line][work_column] * 1000 + .5)/1000 == 0) && (work_column == columns-2) ){
+            lines = base_line;
+            return gaus_step_undeterm(matrix, lines, columns);
+        }
         // определение множителя рабочей строки для каждого уравнения
         // и вычитание из всех строк рабочей
         for(int k = base_line+1; k < lines; k++){
