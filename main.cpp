@@ -7,7 +7,7 @@
 #include <iostream>
 using namespace std;
 
-double* resolve_square_system(double** matrix, int columns, int lines);
+double** resolve_square_system(double** matrix, int columns, int lines);
 double** resolve_system(double** matrix, int columns, int lines);
 double* gaus_step_down(double** step_matrix, int lines, double* right_column);
 double* gaus_step_up(double** step_matrix, int lines, double* right_column);
@@ -96,38 +96,32 @@ int main()
         return 0;
     }
     double** result;
-    double* res;
     if(lines != columns - 1)
         result = resolve_system(matrix, columns, lines);
-    else res = resolve_square_system(matrix, columns, lines);
-    if(result == 0 or res == 0)
+    else result = resolve_square_system(matrix, columns, lines);
+    if(result == 0)
     {
         printf("Система не имеет решений!\n");
         std::cin.get();
         return 0;
     }
-    if(lines != columns - 1){
-        char c;
-        int factor = 0;
-        for(int i = 0; i < lines; i++){
-            printf("X%d = %.2lf", i+1, result[i][0]);
-            for(int j = 1; j < columns - lines; j++ ){
-                if(result[i][j] >= 0) {
-                    c = '+';
-                    factor = 1;}
-                else {
-                    c = '-';
-                    factor = -1;}
-                printf(" %c %.2lf*X%d", c, result[i][j]*factor, lines+j);
-            }
-            cout << endl;
+    char c;
+    int factor = 0;
+    for(int i = 0; i < lines; i++){
+        printf("X%d = %.2lf", i+1, result[i][0]);
+        for(int j = 1; j < columns - lines; j++ ){
+            if(result[i][j] >= 0) {
+                c = '+';
+                factor = 1;}
+            else {
+                c = '-';
+                factor = -1;}
+            printf(" %c %.2lf*X%d", c, result[i][j]*factor, lines+j);
         }
-    }
-    else{
-        for(int i = 0; i < lines; i++)
-        cout << "x" << i+1 << " = " << res[i] << "\n";
         cout << endl;
-    };
+    }
+    free(result[0]);
+    free(result);
     free(matrix[0]);
     free(matrix);
     std::cin.get();
@@ -300,11 +294,13 @@ void transponir(double** L, double *** LT, int columns, int lines){
 }
 
 // Решение квадратной системы
-double* resolve_square_system(double** matrix, int columns, int lines){
+double **resolve_square_system(double** matrix, int columns, int lines){
     int work_column = 0, f = 0;
     double temp;
     for(int base_line = 0; (base_line < lines) && (work_column < columns-1); base_line++){
         f = 0;
+        if((matrix[base_line][work_column] == 0) && (base_line + 1 == lines -1) )
+            return gaus_step_undeterm(matrix, base_line, columns);
         // обработка нулевых значений коэффициентов на углах, ищем хорошую строку
         if(floor( matrix[base_line][work_column] * 1000 + .5)/1000 == 0){ //округление до 3 знака
             int col = work_column;
@@ -353,13 +349,16 @@ double* resolve_square_system(double** matrix, int columns, int lines){
         work_column++;
     }
     print(matrix, columns, lines);
+
+    double** result = (double**) malloc(sizeof(double*));
+    result[0] = (double*) malloc(sizeof(double)*lines);
     double* values = (double*) malloc(sizeof(double)*lines);
-    for(int i = 0; i < lines; i++){
-        values[i] = matrix[i][columns - 1];
-    }
-    double* result = (double*) malloc(sizeof(double)*lines);
-    result = gaus_step_up(matrix, lines, values);
-    return result;
+    for(int i = 0; i < lines; i ++)
+        values[i] = matrix[i][columns-1];
+    result[0] = gaus_step_up(matrix, lines, values);
+    double** resultT;
+    transponir(result, &resultT, lines, 1);
+    return resultT;
 }
 
 // Решение неквадратной системы
