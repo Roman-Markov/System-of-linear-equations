@@ -107,12 +107,18 @@ int main()
         return 0;
     }
     if(lines != columns - 1){
+        char c;
+        int factor = 0;
         for(int i = 0; i < lines; i++){
-            cout << "X" << i+1 << " = " << result[i][columns -1 - lines] << " + ";
-            for(int j = 0; j < columns - 1 - lines; j++ ){
-                cout << -result[i][j] << " * X" << lines+1+j;
-                if(j != columns - 1 - lines -1)
-                    cout << "\t+ ";
+            printf("X%d = %.2lf", i+1, result[i][0]);
+            for(int j = 1; j < columns - lines; j++ ){
+                if(result[i][j] >= 0) {
+                    c = '+';
+                    factor = 1;}
+                else {
+                    c = '-';
+                    factor = -1;}
+                printf(" %c %.2lf*X%d", c, result[i][j]*factor, lines+j);
             }
             cout << endl;
         }
@@ -188,6 +194,7 @@ double determ(double** matrix, int* used, int columns, int current_line){
     return temp;
 }
 
+// Разложение Холецкого
 double **cholesky_decomposition(double** matrix, int lines, int columns){
 // выделение памяти
     double** L = (double**) malloc(sizeof(double*)*lines);
@@ -249,6 +256,36 @@ double* gaus_step_up(double** step_matrix, int lines, double* right_column){
     return ar_value;
 }
 
+// Решение ступенчатой недоопределёной СЛУ
+double** gaus_step_undeterm(double** matrix, int lines, int columns){
+    int num_col = columns - lines;
+    // выделение памяти
+    double** values = (double**) malloc(sizeof(double*)*lines);
+    values[0] = (double*) malloc(sizeof(double)*lines*num_col);
+    for(int i = 1; i < lines; i++)
+        values[i] = *values + i*num_col;
+    memset(values[0], 0, sizeof(double)*lines*num_col);
+
+    // заполнение массива решений
+    for(int i = lines-1; i >= 0; i--){
+        double temp = 0;
+    //подсчёт константной части
+        temp = matrix[i][columns-1];
+        for(int k = lines -1; k > i; k--)
+            temp -= matrix[i][k]*values[k][0];
+        values[i][0] = temp/matrix[i][i];
+
+    // подсчёт векторной части
+        for(int j = 1; j < num_col; j++){
+            temp = matrix[i][i+j];
+            for(int k = lines -1; k > i; k--)
+                temp -= matrix[i][k]*values[k][j];
+            values[i][j] = temp/matrix[i][i];
+        }
+    }
+    return values;
+}
+
 // Транспонирование матрицы
 void transponir(double** L, double *** LT, int columns, int lines){
 // Выделение памяти
@@ -266,22 +303,21 @@ void transponir(double** L, double *** LT, int columns, int lines){
 double* resolve_square_system(double** matrix, int columns, int lines){
     int work_column = 0, f = 0;
     double temp;
-    for(int i = 0; (i < lines) && (work_column < columns-1); i++){
+    for(int base_line = 0; (base_line < lines) && (work_column < columns-1); base_line++){
         f = 0;
-        print(matrix, columns, lines);
         // обработка нулевых значений коэффициентов на углах, ищем хорошую строку
-        if(matrix[i][work_column] == 0){
+        if(floor( matrix[base_line][work_column] * 1000 + .5)/1000 == 0){ //округление до 3 знака
             int col = work_column;
             do {
                 int j;
-                for(j = i+1; j < lines; j++){
+                for(j = base_line+1; j < lines; j++){
                     // строка найдена, перезапись
                     temp = matrix[j][col];
                     if(matrix[j][col] != 0){
                         double work;
                         for(int k = 0; k < columns; k++){
-                            work = matrix[i][k];
-                            matrix[i][k] = matrix[j][k];
+                            work = matrix[base_line][k];
+                            matrix[base_line][k] = matrix[j][k];
                             matrix[j][k] = work;
                         }
                         f = 1;
@@ -295,32 +331,34 @@ double* resolve_square_system(double** matrix, int columns, int lines){
             } while((col < columns) && (temp == 0));
             work_column = col;
         }
-        else temp = matrix[i][work_column];
+        else temp = matrix[base_line][work_column];
         // деление всех коэффициентов на крайний левый на рабочей строке
-        for(int j = 0; j < columns; j++)
-            matrix[i][j] = matrix[i][j]/temp;
+        //for(int j = 0; j < columns; j++)
+        //    matrix[base_line][j] = matrix[base_line][j]/temp;
         // определение множителя рабочей строки для каждого уравнения
         // и вычитание из всех строк рабочей
-        for(int k = 0; k < lines; k++){
-            if(k==i) continue;
-            double factor = matrix[k][work_column];
+        for(int k = base_line+1; k < lines; k++){
+            double factor = matrix[k][work_column]/matrix[base_line][work_column];
             int n;
-            for(n = 0; n < columns; n++){
-                matrix[k][n] = matrix[k][n] - factor*matrix[i][n];
+            for(n = work_column; n < columns; n++){
+                matrix[k][n] = matrix[k][n] - factor*matrix[base_line][n];
             }
         }
         print(matrix, columns, lines);
         // если все коэффициенты нули, а значение не равно нулю,
         // то не имеет решения
-        if( (i != lines-1) && (work_column == columns -2) && (matrix[i+1][work_column] == 0) &&
-                (matrix[i+1][columns-1] != 0))
+        if( (base_line != lines-1) && (work_column == columns -2) && (matrix[base_line+1][work_column] == 0) &&
+                (matrix[base_line+1][columns-1] != 0))
             return 0;
         work_column++;
     }
     print(matrix, columns, lines);
+    double* values = (double*) malloc(sizeof(double)*lines);
+    for(int i = 0; i < lines; i++){
+        values[i] = matrix[i][columns - 1];
+    }
     double* result = (double*) malloc(sizeof(double)*lines);
-    for(int i = 0; i < lines; i++)
-        result[i] = matrix[i][columns-1];
+    result = gaus_step_up(matrix, lines, values);
     return result;
 }
 
@@ -328,45 +366,53 @@ double* resolve_square_system(double** matrix, int columns, int lines){
 double** resolve_system(double** matrix, int columns, int lines){
     int work_column = 0, f = 0;
     double temp;
-    for(int i = 0; i < lines; i++){
+    for(int base_line = 0; base_line < lines; base_line++){
         f = 0;
-        print(matrix, columns, lines);
         // обработка нулевых значений коэффициентов на углах, ищем хорошую строку
-        if(matrix[i][work_column] == 0){
+        if(floor( matrix[base_line][work_column] * 1000 + .5)/1000 == 0){ //округление до 3 знака
             int col = work_column;
             do {
-                for(int j = i+1; j < lines; j++){
-                    if(matrix[j][col]  != 0){ // строка найдена, перезапись
-                        temp = matrix[j][col] ;
+                int j;
+                for(j = base_line+1; j < lines; j++){
+                    // строка найдена, перезапись
+                    temp = matrix[j][col];
+                    if(matrix[j][col] != 0){
                         double work;
                         for(int k = 0; k < columns; k++){
-                            work = matrix[i][k];
-                            matrix[i][k] = matrix[j][k];
+                            work = matrix[base_line][k];
+                            matrix[base_line][k] = matrix[j][k];
                             matrix[j][k] = work;
                         }
-                        print(matrix, columns, lines);
+                        f = 1;
                         break;
                     }
                 }
-                if(col == columns -2)
+                j--;// иначе может выйти за границы массива в коде ниже
+                if((col == columns -2) && (matrix[j][columns-1] != 0))
                     return 0;
                 if(f != 1) col++;
             } while((col < columns) && (temp == 0));
             work_column = col;
         }
-        else temp = matrix[i][work_column];
+        else temp = matrix[base_line][work_column];
         // деление всех коэффициентов на крайний левый на рабочей строке
-        for(int j = 0; j < columns; j++)
-            matrix[i][j] = matrix[i][j]/temp;
+        //for(int j = 0; j < columns; j++)
+        //    matrix[base_line][j] = matrix[base_line][j]/temp;
         // определение множителя рабочей строки для каждого уравнения
         // и вычитание из всех строк рабочей
-        for(int k = 0; k < lines; k++){
-            if(k==i) k++;
-            double factor = matrix[k][work_column];
-            for(int n = 0; n < columns; n++){
-                matrix[k][n] = matrix[k][n] - factor*matrix[i][n];
+        for(int k = base_line+1; k < lines; k++){
+            double factor = matrix[k][work_column]/matrix[base_line][work_column];
+            int n;
+            for(n = work_column; n < columns; n++){
+                matrix[k][n] = matrix[k][n] - factor*matrix[base_line][n];
             }
         }
+        print(matrix, columns, lines);
+        // если все коэффициенты нули, а значение не равно нулю,
+        // то не имеет решения
+        if( (base_line != lines-1) && (work_column == columns -2) && (matrix[base_line+1][work_column] == 0) &&
+                (matrix[base_line+1][columns-1] != 0))
+            return 0;
         work_column++;
     }
     print(matrix, columns, lines);
@@ -374,10 +420,7 @@ double** resolve_system(double** matrix, int columns, int lines){
     result[0] = (double*) malloc(sizeof(double)*lines*(columns-lines));
     for(int i = 1; i < lines; i++)
         result[i] = *result + (columns-lines)*i;
-    for(int i = 0; i < lines; i++){
-       for(int j = 0; j < columns-lines; j++)
-           result[i][j] = matrix[i][lines + j];
-    }
+    result = gaus_step_undeterm(matrix, lines, columns);
     return result;
 }
 
