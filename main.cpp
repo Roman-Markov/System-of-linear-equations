@@ -1,9 +1,7 @@
 ﻿#include <iostream>
-#include <stdio.h>
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
-#include <ctime>
 #include <iostream>
 #include "title.h"
 using namespace std;
@@ -60,7 +58,7 @@ int main()
     }
 
     if(validate_chol(matrix, lines, columns)){
-        printf("Матрица симметричная положительная определённая\n\n");
+        printf("Матрица симметричная положительно определённая\n\n");
         double** L;
         L = cholesky_decomposition(matrix, lines, columns);
         print(L, lines, lines);
