@@ -68,7 +68,6 @@ int main()
         break;
     }
 
-    printf("CHOL - %d\n", validate_chol(matrix, lines, columns));
     if(validate_chol(matrix, lines, columns)){
         double** L;
         L = cholesky_decomposition(matrix, lines, columns);
@@ -78,13 +77,13 @@ int main()
             right_part[i] = matrix[i][columns-1];
         double* values_y = gaus_step_down(L, lines, right_part);
         for (int i = 0; i < lines; i ++)
-            printf("y%d = %lf\n", i+1, values_y[i]);
+            printf("y%d = %.2lf\n", i+1, values_y[i]);
         double** LT;
         transponir(L, &LT, lines, lines);
         print(LT, lines, lines);
         double* values_x = gaus_step_up(LT, lines, values_y);
         for (int i = 0; i < lines; i ++)
-            printf("x%d = %lf\n", i+1, values_x[i]);
+            printf("x%d = %.2lf\n", i+1, values_x[i]);
         /*free(L[0]);
         free(LT[0]);
         free(L);
@@ -212,7 +211,7 @@ double **cholesky_decomposition(double** matrix, int lines, int columns){
         temp = matrix[lines-1][lines-1];
      // вычисление последнего углового элемента
         for(int k = 0; k < lines-1; k++)
-            temp -= L[i][k]*L[i][k];
+            temp -= L[lines-1][k]*L[lines-1][k];
         L[lines-1][lines-1] = pow(temp, 0.5);
     }
     return L;
@@ -233,7 +232,7 @@ double* gaus_step_down(double** step_matrix, int lines, double* right_column){
 // Решение ступенчатой матрицы верхнетреугольного вида
 double* gaus_step_up(double** step_matrix, int lines, double* right_column){
     double* ar_value =(double*) malloc (sizeof(double)*lines);
-    for(int i = lines-1; i > 0; i--){
+    for(int i = lines-1; i >= 0; i--){
         double temp = 0;
         for(int j = lines-1; j > i; j--)
             temp += ar_value[j]*step_matrix[i][j];
@@ -426,7 +425,7 @@ void print(double** A, int columns, int lines){
     for(int i = 0; i < lines; i++)
     {
         for(int j = 0; j < columns; j++)
-            cout << A[i][j] << "\t";
+            printf("%.2lf\t", A[i][j]);
         printf("%c", '\n');
     }
     std::cout << std::endl;
