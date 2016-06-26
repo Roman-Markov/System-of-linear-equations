@@ -203,7 +203,8 @@ double **resolve_square_system(double** matrix, int columns, int& lines){
     for(int base_line = 0; (base_line < lines) && (work_column < columns-1); base_line++){
         f = 0;
         // если система ЛЗ, т.е. самое угловое значение == 0, а строка ещё не последняя
-        if((matrix[base_line][work_column] == 0) && (work_column == lines -1) ){
+        if((matrix[base_line][work_column] == 0) && (work_column == lines -1) &&
+                (matrix[base_line][columns-1] == 0) ){
             lines = base_line;
             return gaus_step_undeterm(matrix, base_line, columns);
         }
