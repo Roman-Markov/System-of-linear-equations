@@ -7,8 +7,8 @@
 #include <iostream>
 using namespace std;
 
-double** resolve_square_system(double** matrix, int columns, int lines);
-double** resolve_system(double** matrix, int columns, int lines);
+double** resolve_square_system(double** matrix, int columns, int &lines);
+double** resolve_system(double** matrix, int columns, int &lines);
 double* gaus_step_down(double** step_matrix, int lines, double* right_column);
 double* gaus_step_up(double** step_matrix, int lines, double* right_column);
 void transponir(double ** L, double *** LT, int columns, int lines);
@@ -268,14 +268,15 @@ double** gaus_step_undeterm(double** matrix, int lines, int columns){
         for(int k = lines -1; k > i; k--)
             temp -= matrix[i][k]*values[k][0];
         values[i][0] = temp/matrix[i][i];
-
     // подсчёт векторной части
         for(int j = 1; j < num_col; j++){
-            temp = matrix[i][i+j];
-            for(int k = lines -1; k > i; k--)
+            temp = -matrix[i][lines-1+j];
+            for(int k = lines -1; k > i; k--){
                 temp -= matrix[i][k]*values[k][j];
+            }
             values[i][j] = temp/matrix[i][i];
         }
+        cout << endl;
     }
     return values;
 }
@@ -294,13 +295,16 @@ void transponir(double** L, double *** LT, int columns, int lines){
 }
 
 // Решение квадратной системы
-double **resolve_square_system(double** matrix, int columns, int lines){
+double **resolve_square_system(double** matrix, int columns, int& lines){
     int work_column = 0, f = 0;
     double temp;
     for(int base_line = 0; (base_line < lines) && (work_column < columns-1); base_line++){
         f = 0;
-        if((matrix[base_line][work_column] == 0) && (base_line + 1 == lines -1) )
+        // если система ЛЗ, т.е. самое угловое значение == 0, а строка ещё не последняя
+        if((matrix[base_line][work_column] == 0) && (work_column == lines -1) ){
+            lines = base_line;
             return gaus_step_undeterm(matrix, base_line, columns);
+        }
         // обработка нулевых значений коэффициентов на углах, ищем хорошую строку
         if(floor( matrix[base_line][work_column] * 1000 + .5)/1000 == 0){ //округление до 3 знака
             int col = work_column;
@@ -328,9 +332,6 @@ double **resolve_square_system(double** matrix, int columns, int lines){
             work_column = col;
         }
         else temp = matrix[base_line][work_column];
-        // деление всех коэффициентов на крайний левый на рабочей строке
-        //for(int j = 0; j < columns; j++)
-        //    matrix[base_line][j] = matrix[base_line][j]/temp;
         // определение множителя рабочей строки для каждого уравнения
         // и вычитание из всех строк рабочей
         for(int k = base_line+1; k < lines; k++){
@@ -362,11 +363,16 @@ double **resolve_square_system(double** matrix, int columns, int lines){
 }
 
 // Решение неквадратной системы
-double** resolve_system(double** matrix, int columns, int lines){
+double** resolve_system(double** matrix, int columns, int& lines){
     int work_column = 0, f = 0;
     double temp;
     for(int base_line = 0; base_line < lines; base_line++){
         f = 0;
+        // если система ЛЗ, т.е. самое угловое значение == 0, а строка ещё не последняя
+        if((floor(matrix[base_line][work_column] * 1000 + .5)/1000 == 0) && (work_column == columns -2) ){
+            lines = base_line;
+            return gaus_step_undeterm(matrix, lines, columns);
+        }
         // обработка нулевых значений коэффициентов на углах, ищем хорошую строку
         if(floor( matrix[base_line][work_column] * 1000 + .5)/1000 == 0){ //округление до 3 знака
             int col = work_column;
@@ -394,9 +400,6 @@ double** resolve_system(double** matrix, int columns, int lines){
             work_column = col;
         }
         else temp = matrix[base_line][work_column];
-        // деление всех коэффициентов на крайний левый на рабочей строке
-        //for(int j = 0; j < columns; j++)
-        //    matrix[base_line][j] = matrix[base_line][j]/temp;
         // определение множителя рабочей строки для каждого уравнения
         // и вычитание из всех строк рабочей
         for(int k = base_line+1; k < lines; k++){
